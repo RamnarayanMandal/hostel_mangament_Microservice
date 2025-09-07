@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:6.0
+    container_name: hostel-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - hostel-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: hostel-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - hostel-network
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: hostel-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - hostel-network
+
+  # All Services in one container
+  hostel-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hostel-app
+    restart: unless-stopped
+    ports:
+      - "3010:3010"  # Gateway
+      - "3001:3001"  # Auth
+      - "3002:3002"  # Student
+      - "3003:3003"  # Hostel
+      - "3004:3004"  # Allocation
+      - "3005:3005"  # Pricing
+      - "3006:3006"  # Booking
+      - "3007:3007"  # Payment
+      - "3008:3008"  # Notification
+      - "3009:3009"  # Admin
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/hostel-management?authSource=admin
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: password123
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_EXPIRES_IN: 24h
+      # Service ports
+      GATEWAY_PORT: 3000
+      AUTH_PORT: 3001
+      STUDENT_PORT: 3002
+      HOSTEL_PORT: 3003
+      ALLOCATION_PORT: 3004
+      PRICING_PORT: 3005
+      BOOKING_PORT: 3006
+      PAYMENT_PORT: 3007
+      NOTIFICATION_PORT: 3008
+      ADMIN_PORT: 3009
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - hostel-network
+    command: npm run dev:all
+
+volumes:
+  mongodb_data:
+  redis_data:
+  rabbitmq_data:
+
+networks:
+  hostel-network:
+    driver: bridge

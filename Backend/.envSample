@@ -1,0 +1,316 @@
+# ========================================
+# Hostel Management Microservices System
+# Environment Configuration
+# ========================================
+
+# ========================================
+# SERVER CONFIGURATION
+# ========================================
+NODE_ENV=development
+PORT=3010
+
+# ========================================
+# DATABASE CONFIGURATION
+# ========================================
+# MongoDB - Main Database
+MONGODB_URI=mongodb://localhost:27017/hostel-management
+MONGODB_USER=admin
+MONGODB_PASSWORD=password123
+
+# MongoDB - Service-specific databases
+AUTH_DB_URI=mongodb://localhost:27017/auth-db
+STUDENT_DB_URI=mongodb://localhost:27017/student-db
+HOSTEL_DB_URI=mongodb://localhost:27017/hostel-db
+ALLOCATION_DB_URI=mongodb://localhost:27017/allocation-db
+PRICING_DB_URI=mongodb://localhost:27017/pricing-db
+BOOKING_DB_URI=mongodb://localhost:27017/booking-db
+PAYMENT_DB_URI=mongodb://localhost:27017/payment-db
+NOTIFICATION_DB_URI=mongodb://localhost:27017/notification-db
+ADMIN_DB_URI=mongodb://localhost:27017/admin-db
+GATEWAY_DB_URI=mongodb://localhost:27017/gateway-db
+
+# ========================================
+# REDIS CONFIGURATION
+# ========================================
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+REDIS_TTL=3600
+
+# ========================================
+# RABBITMQ CONFIGURATION
+# ========================================
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USER=admin
+RABBITMQ_PASS=password123
+RABBITMQ_VHOST=/
+RABBITMQ_QUEUE_PREFIX=hostel
+
+# ========================================
+# JWT CONFIGURATION
+# ========================================
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_EXPIRES_IN=24h
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+JWT_REFRESH_EXPIRES_IN=7d
+
+# ========================================
+# PAYMENT GATEWAY CONFIGURATION
+# ========================================
+# Stripe Configuration
+STRIPE_SECRET_KEY=sk_test_your_stripe_test_key_here
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret_here
+
+# Razorpay Configuration
+RAZORPAY_KEY_ID=rzp_test_your_razorpay_key_id_here
+RAZORPAY_KEY_SECRET=your_razorpay_secret_key_here
+RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret_here
+
+# ========================================
+# EMAIL CONFIGURATION
+# ========================================
+# SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password-here
+SMTP_FROM=noreply@hostelmanagement.com
+SMTP_FROM_NAME=Hostel Management System
+
+# Email Templates
+EMAIL_TEMPLATE_DIR=./src/templates/email
+EMAIL_VERIFICATION_TEMPLATE=email-verification.html
+PASSWORD_RESET_TEMPLATE=password-reset.html
+BOOKING_CONFIRMATION_TEMPLATE=booking-confirmation.html
+PAYMENT_RECEIPT_TEMPLATE=payment-receipt.html
+
+# ========================================
+# SMS CONFIGURATION
+# ========================================
+# Twilio Configuration
+TWILIO_ACCOUNT_SID=your_twilio_account_sid_here
+TWILIO_AUTH_TOKEN=your_twilio_auth_token_here
+TWILIO_PHONE_NUMBER=+1234567890
+TWILIO_VERIFY_SERVICE_SID=your_twilio_verify_service_sid_here
+
+# ========================================
+# FILE UPLOAD CONFIGURATION
+# ========================================
+# File Upload Settings
+UPLOAD_MAX_SIZE=10485760
+UPLOAD_ALLOWED_TYPES=image/jpeg,image/png,image/gif,application/pdf
+UPLOAD_DIR=./uploads
+UPLOAD_TEMP_DIR=./uploads/temp
+
+# AWS S3 Configuration (Optional)
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=hostel-management-uploads
+AWS_S3_ENDPOINT=
+
+# ========================================
+# SECURITY CONFIGURATION
+# ========================================
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_SKIP_SUCCESSFUL_REQUESTS=false
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3010,http://localhost:3001
+CORS_CREDENTIALS=true
+CORS_METHODS=GET,HEAD,PUT,PATCH,POST,DELETE
+
+# Password Policy
+PASSWORD_MIN_LENGTH=8
+PASSWORD_REQUIRE_UPPERCASE=true
+PASSWORD_REQUIRE_LOWERCASE=true
+PASSWORD_REQUIRE_NUMBERS=true
+PASSWORD_REQUIRE_SPECIAL_CHARS=true
+
+# Session Configuration
+SESSION_SECRET=your-session-secret-key-change-in-production
+SESSION_MAX_AGE=86400000
+
+# ========================================
+# LOGGING CONFIGURATION
+# ========================================
+LOG_LEVEL=info
+LOG_FILE=./logs/app.log
+LOG_MAX_SIZE=10485760
+LOG_MAX_FILES=5
+LOG_COLORIZE=true
+LOG_TIMESTAMP=true
+
+# ========================================
+# MONITORING CONFIGURATION
+# ========================================
+# Health Check
+HEALTH_CHECK_INTERVAL=30100
+HEALTH_CHECK_TIMEOUT=5000
+
+# Metrics
+METRICS_ENABLED=true
+METRICS_PORT=9090
+METRICS_PATH=/metrics
+
+# ========================================
+# CACHE CONFIGURATION
+# ========================================
+CACHE_TTL=3600
+CACHE_CHECK_PERIOD=600
+CACHE_MAX_KEYS=1000
+
+# ========================================
+# NOTIFICATION CONFIGURATION
+# ========================================
+# Push Notifications
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_PRIVATE_KEY_ID=your_firebase_private_key_id
+FIREBASE_PRIVATE_KEY=your_firebase_private_key
+FIREBASE_CLIENT_EMAIL=your_firebase_client_email
+FIREBASE_CLIENT_ID=your_firebase_client_id
+
+# WhatsApp Business API (Optional)
+WHATSAPP_API_URL=https://graph.facebook.com/v17.0
+WHATSAPP_PHONE_NUMBER_ID=your_whatsapp_phone_number_id
+WHATSAPP_ACCESS_TOKEN=your_whatsapp_access_token
+
+# ========================================
+# EXTERNAL SERVICES
+# ========================================
+# Google Maps API
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+
+# Weather API (Optional)
+WEATHER_API_KEY=your_weather_api_key
+WEATHER_API_URL=https://api.openweathermap.org/data/2.5
+
+# ========================================
+# DEVELOPMENT CONFIGURATION
+# ========================================
+# Development Tools
+DEBUG=true
+DEBUG_PORT=9229
+NODEMON_WATCH=src
+NODEMON_EXT=ts,js,json
+
+# Test Configuration
+TEST_DB_URI=mongodb://localhost:27017/hostel-test
+TEST_REDIS_DB=1
+TEST_TIMEOUT=10000
+
+# ========================================
+# PRODUCTION CONFIGURATION
+# ========================================
+# Production Overrides (uncomment for production)
+# NODE_ENV=production
+# PORT=3010
+# LOG_LEVEL=error
+# DEBUG=false
+
+# ========================================
+# SERVICE-SPECIFIC PORTS
+# ========================================
+GATEWAY_PORT=3010
+AUTH_PORT=3001
+STUDENT_PORT=3002
+HOSTEL_PORT=3003
+ALLOCATION_PORT=3004
+PRICING_PORT=3005
+BOOKING_PORT=3006
+PAYMENT_PORT=3007
+NOTIFICATION_PORT=3008
+ADMIN_PORT=3009
+
+# ========================================
+# FEATURE FLAGS
+# ========================================
+ENABLE_EMAIL_VERIFICATION=true
+ENABLE_SMS_VERIFICATION=false
+ENABLE_PUSH_NOTIFICATIONS=true
+ENABLE_WHATSAPP_NOTIFICATIONS=false
+ENABLE_FILE_UPLOAD=true
+ENABLE_AUDIT_LOGGING=true
+ENABLE_RATE_LIMITING=true
+ENABLE_CACHING=true
+ENABLE_METRICS=true
+
+# ========================================
+# BUSINESS LOGIC CONFIGURATION
+# ========================================
+# Booking Configuration
+MAX_BOOKING_DURATION_DAYS=365
+MIN_BOOKING_DURATION_DAYS=1
+BOOKING_HOLD_DURATION_MINUTES=30
+BOOKING_CONFIRMATION_TIMEOUT_HOURS=24
+
+# Payment Configuration
+PAYMENT_TIMEOUT_MINUTES=30
+REFUND_PROCESSING_DAYS=3
+PAYMENT_RETRY_ATTEMPTS=3
+
+# Allocation Configuration
+ALLOCATION_PRIORITY_SENIORITY_WEIGHT=0.4
+ALLOCATION_PRIORITY_CATEGORY_WEIGHT=0.3
+ALLOCATION_PRIORITY_FIRST_COME_WEIGHT=0.3
+ALLOCATION_WAITLIST_CAPACITY=100
+
+# Notification Configuration
+EMAIL_BATCH_SIZE=50
+SMS_BATCH_SIZE=20
+NOTIFICATION_RETRY_ATTEMPTS=3
+NOTIFICATION_RETRY_DELAY_MS=5000
+
+# ========================================
+# INTEGRATION CONFIGURATION
+# ========================================
+# Third-party API Timeouts
+API_TIMEOUT_MS=10000
+API_RETRY_ATTEMPTS=3
+API_RETRY_DELAY_MS=1000
+
+# Webhook Configuration
+WEBHOOK_TIMEOUT_MS=5000
+WEBHOOK_RETRY_ATTEMPTS=3
+WEBHOOK_RETRY_DELAY_MS=5000
+
+# ========================================
+# BACKUP & RECOVERY
+# ========================================
+# Database Backup
+BACKUP_ENABLED=true
+BACKUP_SCHEDULE=0 2 * * *
+BACKUP_RETENTION_DAYS=30
+BACKUP_STORAGE_PATH=./backups
+
+# ========================================
+# MAINTENANCE MODE
+# ========================================
+MAINTENANCE_MODE=false
+MAINTENANCE_MESSAGE=System is under maintenance. Please try again later.
+MAINTENANCE_ALLOWED_IPS=127.0.0.1,::1
+
+# ========================================
+# CUSTOMIZATION
+# ========================================
+# Branding
+APP_NAME=Hostel Management System
+APP_VERSION=1.0.0
+COMPANY_NAME=Your Company Name
+COMPANY_EMAIL=support@yourcompany.com
+COMPANY_PHONE=+1234567890
+
+# UI Configuration
+DEFAULT_LANGUAGE=en
+SUPPORTED_LANGUAGES=en,hi,es,fr
+DEFAULT_TIMEZONE=UTC
+SUPPORTED_TIMEZONES=UTC,IST,EST,PST
+
+# ========================================
+# END OF CONFIGURATION
+# ========================================

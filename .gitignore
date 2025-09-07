@@ -1,0 +1,71 @@
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage & reports
+coverage/
+*.lcov
+.nyc_output/
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Environment variable files (ignore all .env except sample)
+.env
+.env.* 
+!.env.example
+
+# Build output (frontend frameworks)
+dist/
+build/
+.next/
+.nuxt/
+.output/
+.cache/
+public/
+out/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE files
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# .NET build folders
+[Bb]in/
+[Oo]bj/
+[Rr]elease/
+[Dd]ebug/
+[Rr]eleases/
+
+# Visual Studio directory
+.vs/
+
+# DOTNET generated to avoid accidentally committing
+*.rsuser
+*.csproj.user
+*.user
+
+# JetBrains Rider
+.idea/
+
+# Misc
+*.tgz
+.cache/
