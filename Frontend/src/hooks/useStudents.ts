@@ -53,7 +53,7 @@ export const useStudents = () => {
       if (filters.limit) params.append('limit', filters.limit.toString());
 
       const response = await axiosClient.get(`/admin/students?${params.toString()}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching students:', error);
       throw error;
@@ -66,7 +66,7 @@ export const useStudents = () => {
     try {
       setLoading(true);
       const response = await axiosClient.post('/admin/students', studentData);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error creating student:', error);
       throw error;
@@ -79,7 +79,7 @@ export const useStudents = () => {
     try {
       setLoading(true);
       const response = await axiosClient.get(`/admin/students/${studentId}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching student:', error);
       throw error;
@@ -92,7 +92,7 @@ export const useStudents = () => {
     try {
       setLoading(true);
       const response = await axiosClient.patch(`/admin/students/${studentId}`, updateData);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error updating student:', error);
       throw error;
@@ -105,7 +105,7 @@ export const useStudents = () => {
     try {
       setLoading(true);
       const response = await axiosClient.patch(`/admin/students/${studentId}/status`, { isActive });
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error updating student status:', error);
       throw error;
@@ -130,7 +130,7 @@ export const useStudents = () => {
     try {
       setLoading(true);
       const response = await axiosClient.get(`/admin/students/enrollment/${enrollmentNo}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching student by enrollment:', error);
       throw error;

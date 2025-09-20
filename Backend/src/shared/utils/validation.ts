@@ -117,6 +117,7 @@ export const createHostelSchema = z.object({
     email: z.string().email('Invalid email format'),
   }),
   capacity: z.number().min(1, 'Capacity must be at least 1'),
+  description: z.string().optional(),
 });
 
 export const updateHostelSchema = z.object({

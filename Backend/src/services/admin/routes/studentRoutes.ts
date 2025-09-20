@@ -19,6 +19,7 @@ router.get('/', validateRequest(paginationSchema), adminController.getAllStudent
 router.post('/', validateRequest(z.object({
   fullName: z.string().min(1),
   email: z.string().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().optional(),
   enrollmentNo: z.string().min(1),
   course: z.string().min(1),

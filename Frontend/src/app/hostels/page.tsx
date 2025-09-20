@@ -47,12 +47,12 @@ export default function HostelsPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // Use appropriate query based on search
-  const hostelsQuery = debouncedSearch 
-    ? useSearchHostels(debouncedSearch)
-    : useHostels({ search: debouncedSearch })
+  // Use both hooks but only use the appropriate one
+  const searchResults = useSearchHostels(debouncedSearch)
+  const hostelsResults = useHostels({ search: debouncedSearch })
 
-  const { data: hostelsData, isLoading, error } = hostelsQuery
+  // Use appropriate query based on search
+  const { data: hostelsData, isLoading, error } = debouncedSearch ? searchResults : hostelsResults
   const hostels = hostelsData?.data || []
 
   // Filter hostels based on selected filters
@@ -60,8 +60,11 @@ export default function HostelsPage() {
     if (selectedAmenity && !hostel.amenities.includes(selectedAmenity)) {
       return false
     }
-    if (selectedStatus && hostel.status !== selectedStatus) {
-      return false
+    if (selectedStatus) {
+      const hostelStatus = hostel.isActive ? 'ACTIVE' : 'INACTIVE'
+      if (hostelStatus !== selectedStatus) {
+        return false
+      }
     }
     return true
   })
@@ -249,7 +252,7 @@ export default function HostelsPage() {
                       {/* Hostel Image */}
                       <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg flex items-center justify-center">
                         <Building2 className="h-16 w-16 text-blue-600" />
-                        {getStatusBadge(hostel.status)}
+                        {getStatusBadge(hostel.isActive ? 'ACTIVE' : 'INACTIVE')}
                       </div>
 
                       <CardHeader>
@@ -258,7 +261,7 @@ export default function HostelsPage() {
                             <CardTitle className="text-xl mb-2">{hostel.name}</CardTitle>
                             <div className="flex items-center text-gray-600 mb-2">
                               <MapPin className="h-4 w-4 mr-1" />
-                              <span className="text-sm">{hostel.city}, {hostel.state}</span>
+                              <span className="text-sm">{hostel.campus || `${hostel.city || ''}, ${hostel.state || ''}`}</span>
                             </div>
                           </div>
                         </div>
@@ -269,10 +272,10 @@ export default function HostelsPage() {
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center text-gray-600">
                             <Users className="h-4 w-4 mr-1" />
-                            <span>{hostel.occupied}/{hostel.capacity} occupied</span>
+                            <span>{hostel.occupied || 0}/{hostel.capacity} occupied</span>
                           </div>
                           <div className="text-green-600 font-medium">
-                            {hostel.available} available
+                            {hostel.available || hostel.capacity} available
                           </div>
                         </div>
 
@@ -298,11 +301,11 @@ export default function HostelsPage() {
                         <div className="space-y-2 text-sm text-gray-600">
                           <div className="flex items-center">
                             <Phone className="h-4 w-4 mr-2" />
-                            <span>{hostel.phoneNumber}</span>
+                            <span>{hostel.contactInfo?.phone || hostel.phoneNumber}</span>
                           </div>
                           <div className="flex items-center">
                             <Mail className="h-4 w-4 mr-2" />
-                            <span>{hostel.email}</span>
+                            <span>{hostel.contactInfo?.email || hostel.email}</span>
                           </div>
                         </div>
 

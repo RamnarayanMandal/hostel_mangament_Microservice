@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 import 'express-async-errors';
 
 import { config } from '../../shared/config/env';
-import { getDatabaseConnection } from '../../shared/config/database';
+import { getDatabaseConnection, checkMongoDBAvailability } from '../../shared/config/database';
 import { getRedisConnection } from '../../shared/config/redis';
 import { getMessageBroker, EVENT_TYPES } from '../../shared/config/message-broker';
 import { errorHandler } from '../../shared/utils/errors';
@@ -74,7 +74,21 @@ app.use(errorHandler);
 // Initialize services
 const initializeServices = async () => {
   try {
+    // Check MongoDB availability first
+    authLogger.logger.info('Checking MongoDB availability...');
+    const isMongoDBAvailable = await checkMongoDBAvailability();
+    
+    if (!isMongoDBAvailable) {
+      authLogger.logger.error('MongoDB is not available. Please ensure MongoDB is running.');
+      authLogger.logger.info('To start MongoDB:');
+      authLogger.logger.info('1. Start Docker Desktop');
+      authLogger.logger.info('2. Run: docker-compose up -d mongodb');
+      authLogger.logger.info('3. Or install MongoDB locally and start the service');
+      throw new Error('MongoDB is not available');
+    }
+
     // Connect to database
+    authLogger.logger.info('Connecting to identity-db...');
     await getDatabaseConnection('identity-db');
     authLogger.logger.info('Connected to identity-db');
 

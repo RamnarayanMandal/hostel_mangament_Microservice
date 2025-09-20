@@ -3,18 +3,24 @@ export interface Hostel {
   _id: string
   name: string
   address: string
-  city: string
-  state: string
-  zipCode: string
-  phoneNumber: string
-  email: string
+  campus: string
+  city?: string
+  state?: string
+  zipCode?: string
+  phoneNumber?: string
+  email?: string
+  contactInfo?: {
+    phone: string
+    email: string
+  }
   capacity: number
-  occupied: number
-  available: number
+  occupied?: number
+  available?: number
   description?: string
   amenities: string[]
-  images: string[]
-  status: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE'
+  images?: string[]
+  isActive: boolean
+  status?: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE'
   createdAt: string
   updatedAt: string
 }

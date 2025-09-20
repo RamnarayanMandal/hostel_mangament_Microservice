@@ -13,7 +13,7 @@ export const config = {
 
   // Database configuration
   database: {
-    uri: process.env.MONGODB_URI || 'mongodb+srv://ramnarayan:Ram1234@cluster0.hk4ehir.mongodb.net',
+    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/hostel-management',
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true,

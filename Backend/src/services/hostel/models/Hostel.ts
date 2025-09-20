@@ -55,6 +55,10 @@ const hostelSchema = new Schema<HostelDocument>({
     required: true,
     min: [1, 'Capacity must be at least 1'],
   },
+  description: {
+    type: String,
+    trim: true,
+  },
   isActive: {
     type: Boolean,
     default: true,
@@ -92,11 +96,11 @@ hostelSchema.pre('save', function(next) {
 
 // Static methods
 hostelSchema.statics.findByCampus = function(campus: string) {
-  return this.find({ campus, isActive: true });
+  return this.find({ campus, isActive: true }).maxTimeMS(60000);
 };
 
 hostelSchema.statics.findActive = function() {
-  return this.find({ isActive: true });
+  return this.find({ isActive: true }).maxTimeMS(60000);
 };
 
 hostelSchema.statics.searchHostels = function(searchTerm: string) {
@@ -106,14 +110,14 @@ hostelSchema.statics.searchHostels = function(searchTerm: string) {
       isActive: true 
     },
     { score: { $meta: 'textScore' } }
-  ).sort({ score: { $meta: 'textScore' } });
+  ).sort({ score: { $meta: 'textScore' } }).maxTimeMS(60000);
 };
 
 hostelSchema.statics.findByAmenity = function(amenity: string) {
   return this.find({ 
     amenities: { $in: [amenity] },
     isActive: true 
-  });
+  }).maxTimeMS(60000);
 };
 
 // Instance methods
@@ -121,22 +125,36 @@ hostelSchema.methods.addAmenity = function(amenity: string) {
   if (!this.amenities.includes(amenity)) {
     this.amenities.push(amenity);
   }
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 hostelSchema.methods.removeAmenity = function(amenity: string) {
   this.amenities = this.amenities.filter((a: any) => a !== amenity);
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 hostelSchema.methods.activate = function() {
   this.isActive = true;
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 hostelSchema.methods.deactivate = function() {
   this.isActive = false;
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 export const Hostel = mongoose.model<HostelDocument>('Hostel', hostelSchema);
+
+// Function to get Hostel model with specific connection
+export const getHostelModel = (connection: mongoose.Connection) => {
+  return connection.model<HostelDocument>('Hostel', hostelSchema);
+};
+
+};
+
+export const Hostel = mongoose.model<HostelDocument>('Hostel', hostelSchema);
+
+// Function to get Hostel model with specific connection
+export const getHostelModel = (connection: mongoose.Connection) => {
+  return connection.model<HostelDocument>('Hostel', hostelSchema);
+};

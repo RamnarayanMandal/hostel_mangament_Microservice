@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { axiosClient } from '@/lib/axiosClient'
+import  axiosClient  from '@/lib/axiosClient'
 
 export interface User {
   _id: string

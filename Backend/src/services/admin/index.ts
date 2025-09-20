@@ -10,6 +10,7 @@ import { RedisConnection } from '../../shared/config/redis';
 import { getMessageBroker, EVENT_TYPES } from '../../shared/config/message-broker';
 import { errorHandler } from '../../shared/utils/errors';
 import { adminLogger } from '../../shared/utils/logger';
+import '../../shared/middleware/auth'; // Import to extend Request interface
 
 import adminRoutes from './routes/adminRoutes';
 import studentRoutes from './routes/studentRoutes';
@@ -112,8 +113,8 @@ process.on('SIGINT', async () => {
 // Start server
 const startServer = async () => {
   try {
-    // Connect to services
-    await dbConnection.connect('admin-db');
+    // Connect to services - use same database as auth service for user data
+    await dbConnection.connect('identity-db');
     await redisConnection.connect();
     await messageBroker.connect();
 

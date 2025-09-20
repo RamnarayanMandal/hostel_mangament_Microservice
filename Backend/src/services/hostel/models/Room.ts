@@ -76,50 +76,60 @@ roomSchema.pre('save', function(next) {
 
 // Static methods
 roomSchema.statics.findByHostel = function(hostelId: string) {
-  return this.find({ hostelId }).sort({ floor: 1, number: 1 });
+  return this.find({ hostelId }).sort({ floor: 1, number: 1 }).maxTimeMS(60000);
 };
 
 roomSchema.statics.findByHostelAndType = function(hostelId: string, type: string) {
-  return this.find({ hostelId, type, status: 'OPEN' });
+  return this.find({ hostelId, type, status: 'OPEN' }).maxTimeMS(60000);
 };
 
 roomSchema.statics.findByHostelAndStatus = function(hostelId: string, status: string) {
-  return this.find({ hostelId, status });
+  return this.find({ hostelId, status }).maxTimeMS(60000);
 };
 
 roomSchema.statics.findAvailableRooms = function(hostelId: string, type?: string) {
   const query: any = { hostelId, status: 'OPEN' };
   if (type) query.type = type;
-  return this.find(query).sort({ floor: 1, number: 1 });
+  return this.find(query).sort({ floor: 1, number: 1 }).maxTimeMS(60000);
 };
 
 roomSchema.statics.findByFloor = function(hostelId: string, floor: number) {
-  return this.find({ hostelId, floor }).sort({ number: 1 });
+  return this.find({ hostelId, floor }).sort({ number: 1 }).maxTimeMS(60000);
 };
 
 roomSchema.statics.findByGenderPolicy = function(hostelId: string, genderPolicy: string) {
-  return this.find({ hostelId, genderPolicy, status: 'OPEN' });
+  return this.find({ hostelId, genderPolicy, status: 'OPEN' }).maxTimeMS(60000);
 };
 
 // Instance methods
 roomSchema.methods.setMaintenance = function() {
   this.status = 'MAINTENANCE';
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 roomSchema.methods.setOpen = function() {
   this.status = 'OPEN';
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 roomSchema.methods.setBlocked = function() {
   this.status = 'BLOCKED';
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 roomSchema.methods.updatePriceTier = function(priceTier: string) {
   this.priceTier = priceTier;
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 export const Room = mongoose.model<RoomDocument>('Room', roomSchema);
+
+// Function to get Room model with specific connection
+export const getRoomModel = (connection: mongoose.Connection) => {
+  return connection.model<RoomDocument>('Room', roomSchema);
+};
+
+// Function to get Room model with specific connection
+export const getRoomModel = (connection: mongoose.Connection) => {
+  return connection.model<RoomDocument>('Room', roomSchema);
+};

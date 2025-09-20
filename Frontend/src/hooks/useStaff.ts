@@ -55,7 +55,7 @@ export const useStaff = () => {
       if (filters.limit) params.append('limit', filters.limit.toString());
 
       const response = await axiosClient.get(`/admin/staff?${params.toString()}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching staff:', error);
       throw error;
@@ -68,7 +68,7 @@ export const useStaff = () => {
     try {
       setLoading(true);
       const response = await axiosClient.post('/admin/staff', staffData);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error creating staff:', error);
       throw error;
@@ -81,7 +81,7 @@ export const useStaff = () => {
     try {
       setLoading(true);
       const response = await axiosClient.get(`/admin/staff/${staffId}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching staff:', error);
       throw error;
@@ -94,7 +94,7 @@ export const useStaff = () => {
     try {
       setLoading(true);
       const response = await axiosClient.patch(`/admin/staff/${staffId}`, updateData);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error updating staff:', error);
       throw error;
@@ -107,7 +107,7 @@ export const useStaff = () => {
     try {
       setLoading(true);
       const response = await axiosClient.patch(`/admin/staff/${staffId}/status`, { isActive });
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error updating staff status:', error);
       throw error;
@@ -120,7 +120,7 @@ export const useStaff = () => {
     try {
       setLoading(true);
       const response = await axiosClient.patch(`/admin/staff/${staffId}/permissions`, { permissions });
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error updating staff permissions:', error);
       throw error;
@@ -145,7 +145,7 @@ export const useStaff = () => {
     try {
       setLoading(true);
       const response = await axiosClient.get(`/admin/staff/employee/${employeeId}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching staff by employee ID:', error);
       throw error;

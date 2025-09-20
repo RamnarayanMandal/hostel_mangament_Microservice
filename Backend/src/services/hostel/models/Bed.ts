@@ -57,30 +57,30 @@ bedSchema.pre('save', function(next) {
 
 // Static methods
 bedSchema.statics.findByRoom = function(roomId: string) {
-  return this.find({ roomId }).sort({ bedNo: 1 });
+  return this.find({ roomId }).sort({ bedNo: 1 }).maxTimeMS(60000);
 };
 
 bedSchema.statics.findAvailableBeds = function(roomId: string) {
-  return this.find({ roomId, status: 'AVAILABLE' }).sort({ bedNo: 1 });
+  return this.find({ roomId, status: 'AVAILABLE' }).sort({ bedNo: 1 }).maxTimeMS(60000);
 };
 
 bedSchema.statics.findByStatus = function(roomId: string, status: string) {
-  return this.find({ roomId, status });
+  return this.find({ roomId, status }).maxTimeMS(60000);
 };
 
 bedSchema.statics.findByBooking = function(bookingId: string) {
-  return this.findOne({ occupantBookingId: bookingId });
+  return this.findOne({ occupantBookingId: bookingId }).maxTimeMS(60000);
 };
 
 bedSchema.statics.findExpiredHolds = function() {
   return this.find({
     status: 'ON_HOLD',
     holdExpiresAt: { $lt: new Date() }
-  });
+  }).maxTimeMS(60000);
 };
 
 bedSchema.statics.findByRoomAndBedNo = function(roomId: string, bedNo: string) {
-  return this.findOne({ roomId, bedNo });
+  return this.findOne({ roomId, bedNo }).maxTimeMS(60000);
 };
 
 // Instance methods
@@ -88,35 +88,35 @@ bedSchema.methods.hold = function(bookingId: string, ttlSeconds: number = 300) {
   this.status = 'ON_HOLD';
   this.occupantBookingId = bookingId;
   this.holdExpiresAt = new Date(Date.now() + ttlSeconds * 1000);
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 bedSchema.methods.allocate = function(bookingId: string) {
   this.status = 'ALLOCATED';
   this.occupantBookingId = bookingId;
   this.holdExpiresAt = undefined;
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 bedSchema.methods.release = function() {
   this.status = 'AVAILABLE';
   this.occupantBookingId = undefined;
   this.holdExpiresAt = undefined;
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 bedSchema.methods.block = function() {
   this.status = 'BLOCKED';
   this.occupantBookingId = undefined;
   this.holdExpiresAt = undefined;
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 bedSchema.methods.extendHold = function(ttlSeconds: number = 300) {
   if (this.status === 'ON_HOLD') {
     this.holdExpiresAt = new Date(Date.now() + ttlSeconds * 1000);
   }
-  return this.save();
+  return this.save({ maxTimeMS: 60000 });
 };
 
 // Aggregation methods
@@ -154,3 +154,13 @@ bedSchema.statics.getHostelBedStatistics = function(hostelId: string) {
 };
 
 export const Bed = mongoose.model<BedDocument>('Bed', bedSchema);
+
+// Function to get Bed model with specific connection
+export const getBedModel = (connection: mongoose.Connection) => {
+  return connection.model<BedDocument>('Bed', bedSchema);
+};
+
+// Function to get Bed model with specific connection
+export const getBedModel = (connection: mongoose.Connection) => {
+  return connection.model<BedDocument>('Bed', bedSchema);
+};

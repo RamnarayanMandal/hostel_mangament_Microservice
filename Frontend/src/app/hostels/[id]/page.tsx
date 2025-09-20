@@ -181,21 +181,52 @@ export default function HostelDetailPage() {
               </div>
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
                     <CardTitle className="text-3xl mb-2">{hostel.name}</CardTitle>
                     <div className="flex items-center text-gray-600 mb-2">
                       <MapPin className="h-5 w-5 mr-2" />
-                      <span>{hostel.address}, {hostel.city}, {hostel.state} {hostel.zipCode}</span>
+                      <span>{hostel.address}, {hostel.campus || `${hostel.city || ''}, ${hostel.state || ''}`}</span>
                     </div>
-                    <p className="text-gray-600">{hostel.description}</p>
+                    {hostel.description && (
+                      <p className="text-gray-600 mb-4">{hostel.description}</p>
+                    )}
+                    
+                    {/* Additional hostel details */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-2 text-blue-600" />
+                        <span className="text-gray-600">Capacity: <span className="font-semibold">{hostel.capacity}</span></span>
+                      </div>
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        <span className="text-gray-600">Status: <span className="font-semibold capitalize">{hostel.isActive ? 'Active' : 'Inactive'}</span></span>
+                      </div>
+                      {hostel.contactInfo?.phone && (
+                        <div className="flex items-center">
+                          <Phone className="h-4 w-4 mr-2 text-blue-600" />
+                          <span className="text-gray-600">{hostel.contactInfo.phone}</span>
+                        </div>
+                      )}
+                      {hostel.contactInfo?.email && (
+                        <div className="flex items-center">
+                          <Mail className="h-4 w-4 mr-2 text-blue-600" />
+                          <span className="text-gray-600">{hostel.contactInfo.email}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Capacity:</span>
-                      <span className="font-semibold">{hostel.occupied}/{hostel.capacity}</span>
-                    </div>
-                    <div className="text-green-600 font-medium">
-                      {hostel.available} rooms available
+                  <div className="text-right ml-6">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-600">Occupied:</span>
+                        <span className="font-semibold text-lg">{hostel.occupied || 0}/{hostel.capacity}</span>
+                      </div>
+                      <div className="text-green-600 font-medium text-center">
+                        {hostel.available || hostel.capacity} available
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {Math.round(((hostel.occupied || 0) / hostel.capacity) * 100)}% occupied
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -220,12 +251,17 @@ export default function HostelDetailPage() {
                       {hostel.amenities.map((amenity, index) => {
                         const { icon: Icon, color } = getAmenityIcon(amenity)
                         return (
-                          <div key={index} className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                          <div key={index} className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                             <Icon className={`h-5 w-5 ${color}`} />
                             <span className="text-sm font-medium">{amenity}</span>
                           </div>
                         )
                       })}
+                    </div>
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Total Amenities:</strong> {hostel.amenities.length} facilities available
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -333,14 +369,14 @@ export default function HostelDetailPage() {
                       <Phone className="h-5 w-5 text-blue-600" />
                       <div>
                         <p className="font-medium">Phone</p>
-                        <p className="text-sm text-gray-600">{hostel.phoneNumber}</p>
+                        <p className="text-sm text-gray-600">{hostel.contactInfo?.phone || hostel.phoneNumber}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Mail className="h-5 w-5 text-blue-600" />
                       <div>
                         <p className="font-medium">Email</p>
-                        <p className="text-sm text-gray-600">{hostel.email}</p>
+                        <p className="text-sm text-gray-600">{hostel.contactInfo?.email || hostel.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -354,8 +390,60 @@ export default function HostelDetailPage() {
                       <CheckCircle className="h-5 w-5 text-green-600" />
                       <div>
                         <p className="font-medium">Status</p>
-                        <p className="text-sm text-gray-600 capitalize">{hostel.status.toLowerCase()}</p>
+                        <p className="text-sm text-gray-600 capitalize">{hostel.isActive ? 'Active' : 'Inactive'}</p>
                       </div>
+                    </div>
+                    {hostel.zipCode && (
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="h-5 w-5 text-blue-600" />
+                        <div>
+                          <p className="font-medium">ZIP Code</p>
+                          <p className="text-sm text-gray-600">{hostel.zipCode}</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="font-medium">Created</p>
+                        <p className="text-sm text-gray-600">{new Date(hostel.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="font-medium">Last Updated</p>
+                        <p className="text-sm text-gray-600">{new Date(hostel.updatedAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+
+              {/* Additional Details Card */}
+              <StaggerItem>
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Additional Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {hostel.description && (
+                      <div>
+                        <p className="font-medium mb-2">Description</p>
+                        <p className="text-sm text-gray-600 leading-relaxed">{hostel.description}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-medium mb-2">Full Address</p>
+                      <p className="text-sm text-gray-600">
+                        {hostel.address}<br />
+                        {hostel.campus || `${hostel.city || ''}, ${hostel.state || ''}`}
+                        {hostel.zipCode && <><br />{hostel.zipCode}</>}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium mb-2">Hostel ID</p>
+                      <p className="text-sm text-gray-500 font-mono">{hostel._id}</p>
                     </div>
                   </CardContent>
                 </Card>

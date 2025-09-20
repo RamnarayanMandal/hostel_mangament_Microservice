@@ -1,6 +1,6 @@
-import { Hostel, HostelDocument } from '../models/Hostel';
-import { Room, RoomDocument } from '../models/Room';
-import { Bed, BedDocument } from '../models/Bed';
+import { Hostel, HostelDocument, getHostelModel } from '../models/Hostel';
+import { Room, RoomDocument, getRoomModel } from '../models/Room';
+import { Bed, BedDocument, getBedModel } from '../models/Bed';
 import { 
   CreateHostelInput, 
   UpdateHostelInput,
@@ -15,11 +15,47 @@ import {
   ValidationError 
 } from '../../../shared/utils/errors';
 import { getMessageBroker, EVENT_TYPES } from '../../../shared/config/message-broker';
+import { getDatabaseConnection } from '../../../shared/config/database';
 import { hostelLogger } from '../../../shared/utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
 export class HostelService {
   private messageBroker = getMessageBroker();
+  private dbConnection: any;
+  private hostelModel: any = Hostel;
+  private roomModel: any = Room;
+  private bedModel: any = Bed;
+
+  constructor() {
+    this.initializeDatabaseConnection();
+  }
+
+  private async initializeDatabaseConnection() {
+    try {
+      this.dbConnection = await getDatabaseConnection('hostel-db');
+      this.hostelModel = getHostelModel(this.dbConnection);
+      this.roomModel = getRoomModel(this.dbConnection);
+      this.bedModel = getBedModel(this.dbConnection);
+      hostelLogger.logger.info('HostelService database connection initialized');
+    } catch (error) {
+      hostelLogger.logger.error('Failed to initialize database connection', { error: (error as Error).message });
+      this.hostelModel = Hostel; // Fallback to default model
+      this.roomModel = Room;
+      this.bedModel = Bed;
+    }
+  }
+
+  private getHostelModel() {
+    return this.hostelModel || Hostel;
+  }
+
+  private getRoomModel() {
+    return this.roomModel || Room;
+  }
+
+  private getBedModel() {
+    return this.bedModel || Bed;
+  }
 
   // Hostel Management
   /**
@@ -28,17 +64,18 @@ export class HostelService {
   public async createHostel(hostelData: CreateHostelInput): Promise<HostelDocument> {
     try {
       // Check if hostel with same name in same campus already exists
-      const existingHostel = await Hostel.findOne({
+      const existingHostel = await this.getHostelModel().findOne({
         name: hostelData.name,
         campus: hostelData.campus,
-      });
+      }).maxTimeMS(60000);
       
       if (existingHostel) {
         throw new ConflictError('Hostel with this name already exists in the campus');
       }
 
-      const hostel = new Hostel(hostelData);
-      await hostel.save();
+      const HostelModel = this.getHostelModel();
+      const hostel = new HostelModel(hostelData);
+      await hostel.save({ maxTimeMS: 60000 });
 
       // Publish hostel created event
       await this.messageBroker.publishEvent({
@@ -71,7 +108,7 @@ export class HostelService {
    */
   public async getHostelById(hostelId: string): Promise<HostelDocument> {
     try {
-      const hostel = await Hostel.findById(hostelId);
+      const hostel = await this.getHostelModel().findById(hostelId).maxTimeMS(60000);
       if (!hostel) {
         throw new NotFoundError('Hostel');
       }
@@ -87,10 +124,10 @@ export class HostelService {
    */
   public async updateHostel(hostelId: string, updateData: UpdateHostelInput): Promise<HostelDocument> {
     try {
-      const hostel = await Hostel.findByIdAndUpdate(
+      const hostel = await this.getHostelModel().findByIdAndUpdate(
         hostelId,
         { $set: updateData },
-        { new: true, runValidators: true }
+        { new: true, runValidators: true, maxTimeMS: 60000 }
       );
 
       if (!hostel) {
@@ -145,12 +182,13 @@ export class HostelService {
       }
 
       const [hostels, total] = await Promise.all([
-        Hostel.find(query)
+        this.getHostelModel().find(query)
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
-          .lean(),
-        Hostel.countDocuments(query),
+          .lean()
+          .maxTimeMS(60000),
+        this.getHostelModel().countDocuments(query).maxTimeMS(60000),
       ]);
 
       const totalPages = Math.ceil(total / limit);
@@ -173,7 +211,7 @@ export class HostelService {
    */
   public async searchHostels(searchTerm: string): Promise<HostelDocument[]> {
     try {
-      const hostels = await Hostel.searchHostels(searchTerm);
+      const hostels = await this.getHostelModel().searchHostels(searchTerm);
       return hostels;
     } catch (error) {
       hostelLogger.logger.error('Failed to search hostels', { error: error.message, searchTerm });
@@ -186,7 +224,7 @@ export class HostelService {
    */
   public async getHostelsByCampus(campus: string): Promise<HostelDocument[]> {
     try {
-      const hostels = await Hostel.findByCampus(campus);
+      const hostels = await this.getHostelModel().findByCampus(campus);
       return hostels;
     } catch (error) {
       hostelLogger.logger.error('Failed to get hostels by campus', { error: error.message, campus });
@@ -199,7 +237,7 @@ export class HostelService {
    */
   public async getHostelsByAmenity(amenity: string): Promise<HostelDocument[]> {
     try {
-      const hostels = await Hostel.findByAmenity(amenity);
+      const hostels = await this.getHostelModel().findByAmenity(amenity);
       return hostels;
     } catch (error) {
       hostelLogger.logger.error('Failed to get hostels by amenity', { error: error.message, amenity });
@@ -214,19 +252,23 @@ export class HostelService {
   public async createRoom(roomData: CreateRoomInput): Promise<RoomDocument> {
     try {
       // Verify hostel exists
-      const hostel = await Hostel.findById(roomData.hostelId);
+      const hostel = await this.getHostelModel().findById(roomData.hostelId).maxTimeMS(60000);
       if (!hostel) {
         throw new NotFoundError('Hostel');
       }
 
       // Check if room number already exists in the hostel
-      const existingRoom = await Room.findByRoomAndBedNo(roomData.hostelId, roomData.number);
+      const existingRoom = await this.getRoomModel().findOne({ 
+        hostelId: roomData.hostelId, 
+        number: roomData.number 
+      }).maxTimeMS(60000);
       if (existingRoom) {
         throw new ConflictError('Room number already exists in this hostel');
       }
 
-      const room = new Room(roomData);
-      await room.save();
+      const RoomModel = this.getRoomModel();
+      const room = new RoomModel(roomData);
+      await room.save({ maxTimeMS: 60000 });
 
       hostelLogger.logger.info('Room created successfully', { 
         roomId: room._id, 
@@ -540,6 +582,48 @@ export class HostelService {
    * Get hostel bed statistics
    */
   public async getHostelBedStatistics(hostelId: string): Promise<any> {
+    try {
+      const statistics = await Bed.getHostelBedStatistics(hostelId);
+      return statistics;
+    } catch (error) {
+      hostelLogger.logger.error('Failed to get hostel bed statistics', { error: error.message, hostelId });
+      throw error;
+    }
+  }
+
+  /**
+   * Clean up expired holds
+   */
+  public async cleanupExpiredHolds(): Promise<void> {
+    try {
+      const expiredBeds = await Bed.findExpiredHolds();
+      
+      for (const bed of expiredBeds) {
+        await bed.release();
+
+        // Publish bed hold expired event
+        await this.messageBroker.publishEvent({
+          id: uuidv4(),
+          type: EVENT_TYPES.BED_HOLD_EXPIRED,
+          service: 'hostel-service',
+          data: {
+            bedId: bed._id,
+            roomId: bed.roomId,
+          },
+          timestamp: new Date(),
+        });
+      }
+
+      hostelLogger.logger.info('Cleaned up expired holds', { count: expiredBeds.length });
+    } catch (error) {
+      hostelLogger.logger.error('Failed to cleanup expired holds', { error: error.message });
+      throw error;
+    }
+  }
+}
+
+export const hostelService = new HostelService();
+
     try {
       const statistics = await Bed.getHostelBedStatistics(hostelId);
       return statistics;

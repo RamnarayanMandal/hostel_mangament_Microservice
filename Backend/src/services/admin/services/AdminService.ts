@@ -5,7 +5,8 @@ import { getMessageBroker, EVENT_TYPES } from '../../../shared/config/message-br
 import { adminLogger } from '../../../shared/utils/logger';
 import { AppError } from '../../../shared/utils/errors';
 import { Types } from 'mongoose';
-import { User, UserDocument } from '../../auth/models/User';
+import { User, UserDocument, getUserModel } from '../../auth/models/User';
+import { DatabaseConnection, getDatabaseConnection } from '../../../shared/config/database';
 
 interface AdminEventData {
   adminId: Types.ObjectId;
@@ -92,14 +93,35 @@ interface SystemHealth {
 
 export class AdminService {
   private messageBroker: any;
+  private dbConnection: DatabaseConnection;
+  private userModel: typeof User = User;
 
   constructor() {
     try {
       this.messageBroker = getMessageBroker();
+      this.dbConnection = DatabaseConnection.getInstance();
+      this.initializeUserModel();
     } catch (error) {
       console.log('⚠️ MessageBroker not available, continuing without event publishing');
       this.messageBroker = null;
+      this.dbConnection = DatabaseConnection.getInstance();
     }
+  }
+
+  private async initializeUserModel() {
+    try {
+      const connection = await getDatabaseConnection('identity-db');
+      this.userModel = getUserModel(connection);
+    } catch (error) {
+      adminLogger.logger.error('Failed to initialize User model', { error: (error as Error).message });
+      // Fallback to default model
+      this.userModel = User;
+    }
+  }
+
+  // Helper method to get User model with correct database connection
+  private getUserModel() {
+    return this.userModel || User; // Fallback to default model if not initialized
   }
 
   private async publishEvent(eventType: string, data: any) {
@@ -503,13 +525,14 @@ export class AdminService {
         query.isActive = isActive;
       }
 
-      const users = await User.find(query)
+      const UserModel = this.getUserModel();
+      const users = await UserModel.find(query)
         .select('-passwordHash')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
-      const total = await User.countDocuments(query);
+      const total = await this.getUserModel().countDocuments(query);
       const totalPages = Math.ceil(total / limit);
 
       return {
@@ -528,13 +551,22 @@ export class AdminService {
   public async createUser(userData: any) {
     try {
       // Check if user already exists
-      const existingUser = await User.findOne({ email: userData.email });
+      const existingUser = await this.getUserModel().findOne({ email: userData.email });
       if (existingUser) {
         throw new AppError('User with this email already exists', 400);
       }
 
-      const user = new User(userData);
-      await user.save();
+      // Hash the password
+      const { jwtService } = await import('../../../shared/utils/jwt');
+      const passwordHash = await jwtService.hashPassword(userData.password);
+      
+      // Create user with hashed password
+      const user = new this.getUserModel()({
+        ...userData,
+        passwordHash,
+        password: undefined // Remove the plain password
+      });
+      await user.save({ maxTimeMS: 30000 });
 
       // Publish event
       await this.publishEvent(EVENT_TYPES.USER_CREATED, {
@@ -554,7 +586,7 @@ export class AdminService {
 
   public async getUserById(userId: string) {
     try {
-      const user = await User.findById(userId).select('-passwordHash');
+      const user = await this.getUserModel().findById(userId).select('-passwordHash');
       if (!user) {
         throw new AppError('User not found', 404);
       }
@@ -567,14 +599,14 @@ export class AdminService {
 
   public async updateUserRole(userId: string, newRole: string) {
     try {
-      const user = await User.findById(userId);
+      const user = await this.getUserModel().findById(userId);
       if (!user) {
         throw new AppError('User not found', 404);
       }
 
       const oldRole = user.role;
       user.role = newRole as any;
-      await user.save();
+      await user.save({ maxTimeMS: 30000 });
 
       // Publish event
       await this.publishEvent(EVENT_TYPES.USER_UPDATED, {
@@ -595,14 +627,14 @@ export class AdminService {
 
   public async updateUserStatus(userId: string, isActive: boolean) {
     try {
-      const user = await User.findById(userId);
+      const user = await this.getUserModel().findById(userId);
       if (!user) {
         throw new AppError('User not found', 404);
       }
 
       const oldStatus = user.isActive;
       user.isActive = isActive;
-      await user.save();
+      await user.save({ maxTimeMS: 30000 });
 
       // Publish event
       await this.publishEvent(EVENT_TYPES.USER_UPDATED, {
@@ -663,12 +695,12 @@ export class AdminService {
 
   public async deleteUser(userId: string) {
     try {
-      const user = await User.findById(userId);
+      const user = await this.getUserModel().findById(userId);
       if (!user) {
         throw new AppError('User not found', 404);
       }
 
-      await User.findByIdAndDelete(userId);
+      await this.getUserModel().findByIdAndDelete(userId);
 
       // Publish event
       await this.publishEvent(EVENT_TYPES.USER_DELETED, {
@@ -689,7 +721,7 @@ export class AdminService {
   async getAllStudents(filters: any = {}, pagination: any = {}) {
     try {
       const { page = 1, limit = 10, search, course, year, isActive } = filters;
-      const query: any = { role: 'student' };
+      const query: any = { role: 'STUDENT' };
 
       if (search) {
         query.$or = [
@@ -704,13 +736,13 @@ export class AdminService {
       if (isActive !== undefined) query.isActive = isActive;
 
       const skip = (page - 1) * limit;
-      const students = await User.find(query)
+      const students = await this.getUserModel().find(query)
         .select('-password')
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 });
 
-      const total = await User.countDocuments(query);
+      const total = await this.getUserModel().countDocuments(query);
 
       return {
         students,
@@ -731,13 +763,22 @@ export class AdminService {
     try {
       adminLogger.logger.info('Creating student', { email: studentData.email });
       
-      const student = new User({
+      // Hash the password if provided
+      let passwordHash = '';
+      if (studentData.password) {
+        const { jwtService } = await import('../../../shared/utils/jwt');
+        passwordHash = await jwtService.hashPassword(studentData.password);
+      }
+      
+      const student = new this.getUserModel()({
         ...studentData,
-        role: 'student',
-        isActive: true
+        role: 'STUDENT',
+        isActive: true,
+        passwordHash,
+        password: undefined // Remove the plain password
       });
 
-      await student.save();
+      await student.save({ maxTimeMS: 30000 });
 
       // Publish event
       await this.publishEvent(EVENT_TYPES.USER_CREATED, {
@@ -757,7 +798,7 @@ export class AdminService {
 
   async getStudentById(studentId: string) {
     try {
-      const student = await User.findOne({ _id: studentId, role: 'student' }).select('-password');
+      const student = await this.getUserModel().findOne({ _id: studentId, role: 'student' }).select('-password');
       return student;
     } catch (error) {
       adminLogger.logger.error('Failed to get student by ID', { studentId, error: (error as Error).message });
@@ -769,7 +810,7 @@ export class AdminService {
     try {
       adminLogger.logger.info('Updating student', { studentId });
       
-      const student = await User.findOneAndUpdate(
+      const student = await this.getUserModel().findOneAndUpdate(
         { _id: studentId, role: 'student' },
         updateData,
         { new: true, runValidators: true }
@@ -799,7 +840,7 @@ export class AdminService {
     try {
       adminLogger.logger.info('Updating student status', { studentId, isActive });
       
-      const student = await User.findOneAndUpdate(
+      const student = await this.getUserModel().findOneAndUpdate(
         { _id: studentId, role: 'student' },
         { isActive },
         { new: true, runValidators: true }
@@ -821,12 +862,12 @@ export class AdminService {
     try {
       adminLogger.logger.info('Deleting student', { studentId });
       
-      const student = await User.findOne({ _id: studentId, role: 'student' });
+      const student = await this.getUserModel().findOne({ _id: studentId, role: 'student' });
       if (!student) {
         throw new AppError('Student not found', 404);
       }
 
-      await User.findByIdAndDelete(studentId);
+      await this.getUserModel().findByIdAndDelete(studentId);
 
       // Publish event
       await this.publishEvent(EVENT_TYPES.USER_DELETED, {
@@ -845,7 +886,7 @@ export class AdminService {
 
   async getStudentByEnrollment(enrollmentNo: string) {
     try {
-      const student = await User.findOne({ enrollmentNo, role: 'student' }).select('-password');
+      const student = await this.getUserModel().findOne({ enrollmentNo, role: 'student' }).select('-password');
       return student;
     } catch (error) {
       adminLogger.logger.error('Failed to get student by enrollment', { enrollmentNo, error: (error as Error).message });
@@ -857,7 +898,7 @@ export class AdminService {
   async getAllStaff(filters: any = {}, pagination: any = {}) {
     try {
       const { page = 1, limit = 10, search, department, position, isActive } = filters;
-      const query: any = { role: 'staff' };
+      const query: any = { role: 'STAFF' };
 
       if (search) {
         query.$or = [
@@ -872,13 +913,13 @@ export class AdminService {
       if (isActive !== undefined) query.isActive = isActive;
 
       const skip = (page - 1) * limit;
-      const staff = await User.find(query)
+      const staff = await this.getUserModel().find(query)
         .select('-password')
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 });
 
-      const total = await User.countDocuments(query);
+      const total = await this.getUserModel().countDocuments(query);
 
       return {
         staff,
@@ -899,13 +940,22 @@ export class AdminService {
     try {
       adminLogger.logger.info('Creating staff', { email: staffData.email });
       
-      const staff = new User({
+      // Hash the password if provided
+      let passwordHash = '';
+      if (staffData.password) {
+        const { jwtService } = await import('../../../shared/utils/jwt');
+        passwordHash = await jwtService.hashPassword(staffData.password);
+      }
+      
+      const staff = new this.getUserModel()({
         ...staffData,
-        role: 'staff',
-        isActive: true
+        role: 'STAFF',
+        isActive: true,
+        passwordHash,
+        password: undefined // Remove the plain password
       });
 
-      await staff.save();
+      await staff.save({ maxTimeMS: 30000 });
 
       // Publish event
       await this.publishEvent(EVENT_TYPES.USER_CREATED, {
@@ -925,7 +975,7 @@ export class AdminService {
 
   async getStaffById(staffId: string) {
     try {
-      const staff = await User.findOne({ _id: staffId, role: 'staff' }).select('-password');
+      const staff = await this.getUserModel().findOne({ _id: staffId, role: 'staff' }).select('-password');
       return staff;
     } catch (error) {
       adminLogger.logger.error('Failed to get staff by ID', { staffId, error: (error as Error).message });
@@ -937,7 +987,7 @@ export class AdminService {
     try {
       adminLogger.logger.info('Updating staff', { staffId });
       
-      const staff = await User.findOneAndUpdate(
+      const staff = await this.getUserModel().findOneAndUpdate(
         { _id: staffId, role: 'staff' },
         updateData,
         { new: true, runValidators: true }
@@ -967,7 +1017,7 @@ export class AdminService {
     try {
       adminLogger.logger.info('Updating staff status', { staffId, isActive });
       
-      const staff = await User.findOneAndUpdate(
+      const staff = await this.getUserModel().findOneAndUpdate(
         { _id: staffId, role: 'staff' },
         { isActive },
         { new: true, runValidators: true }
@@ -989,7 +1039,7 @@ export class AdminService {
     try {
       adminLogger.logger.info('Updating staff permissions', { staffId });
       
-      const staff = await User.findOneAndUpdate(
+      const staff = await this.getUserModel().findOneAndUpdate(
         { _id: staffId, role: 'staff' },
         { permissions },
         { new: true, runValidators: true }
@@ -1011,12 +1061,12 @@ export class AdminService {
     try {
       adminLogger.logger.info('Deleting staff', { staffId });
       
-      const staff = await User.findOne({ _id: staffId, role: 'staff' });
+      const staff = await this.getUserModel().findOne({ _id: staffId, role: 'staff' });
       if (!staff) {
         throw new AppError('Staff not found', 404);
       }
 
-      await User.findByIdAndDelete(staffId);
+      await this.getUserModel().findByIdAndDelete(staffId);
 
       // Publish event
       await this.publishEvent(EVENT_TYPES.USER_DELETED, {
@@ -1035,7 +1085,7 @@ export class AdminService {
 
   async getStaffByEmployeeId(employeeId: string) {
     try {
-      const staff = await User.findOne({ employeeId, role: 'staff' }).select('-password');
+      const staff = await this.getUserModel().findOne({ employeeId, role: 'staff' }).select('-password');
       return staff;
     } catch (error) {
       adminLogger.logger.error('Failed to get staff by employee ID', { employeeId, error: (error as Error).message });

@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Search, Edit, Trash2, Eye, Filter, Download, Shield } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Download, Shield, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStaff } from '@/hooks/useStaff';
 
@@ -38,9 +38,17 @@ const StaffPage = () => {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('');
-  const [positionFilter, setPositionFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [positionFilter, setPositionFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    pages: 0
+  });
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -84,18 +92,21 @@ const StaffPage = () => {
 
   useEffect(() => {
     loadStaff();
-  }, [searchTerm, departmentFilter, positionFilter, statusFilter]);
+  }, [searchTerm, departmentFilter, positionFilter, statusFilter, currentPage, pageSize]);
 
   const loadStaff = async () => {
     try {
       setLoading(true);
       const response = await getAllStaff({
         search: searchTerm,
-        department: departmentFilter,
-        position: positionFilter,
-        isActive: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
+        department: departmentFilter === 'all' ? undefined : departmentFilter,
+        position: positionFilter === 'all' ? undefined : positionFilter,
+        isActive: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
+        page: currentPage,
+        limit: pageSize
       });
       setStaff(response.staff || []);
+      setPagination(response.pagination || { total: 0, page: 1, limit: 10, pages: 0 });
     } catch (error) {
       toast.error('Failed to load staff');
     } finally {
@@ -123,7 +134,10 @@ const StaffPage = () => {
     if (!selectedStaff) return;
     
     try {
-      await updateStaff(selectedStaff._id, formData);
+      await updateStaff(selectedStaff._id, {
+        ...formData,
+        salary: formData.salary ? Number(formData.salary) : undefined
+      });
       toast.success('Staff updated successfully');
       setIsEditDialogOpen(false);
       resetForm();
@@ -411,7 +425,7 @@ const StaffPage = () => {
                 <SelectValue placeholder="Filter by department" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Departments</SelectItem>
+                <SelectItem value="all">All Departments</SelectItem>
                 <SelectItem value="Administration">Administration</SelectItem>
                 <SelectItem value="IT">IT</SelectItem>
                 <SelectItem value="Maintenance">Maintenance</SelectItem>
@@ -424,7 +438,7 @@ const StaffPage = () => {
                 <SelectValue placeholder="Filter by position" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Positions</SelectItem>
+                <SelectItem value="all">All Positions</SelectItem>
                 <SelectItem value="Manager">Manager</SelectItem>
                 <SelectItem value="Supervisor">Supervisor</SelectItem>
                 <SelectItem value="Technician">Technician</SelectItem>
@@ -437,7 +451,7 @@ const StaffPage = () => {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
@@ -534,6 +548,59 @@ const StaffPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Pagination Controls */}
+      {pagination.pages > 1 && (
+        <Card className="mt-6">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} staff members
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={pagination.page <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+                    const pageNum = Math.max(1, Math.min(pagination.pages - 4, pagination.page - 2)) + i;
+                    if (pageNum > pagination.pages) return null;
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={pageNum === pagination.page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="w-8 h-8 p-0"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(pagination.pages, prev + 1))}
+                  disabled={pagination.page >= pagination.pages}
+                >
+                  Next
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

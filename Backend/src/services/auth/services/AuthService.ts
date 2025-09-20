@@ -1,4 +1,5 @@
-import { User as UserModel, UserDocument } from '../models/User';
+import { User as UserModel, UserDocument, getUserModel } from '../models/User';
+import { getDatabaseConnection } from '../../../shared/config/database';
 import { jwtService } from '../../../shared/utils/jwt';
 import { 
   UpdateUserInput, 
@@ -22,9 +23,22 @@ import { admin } from '../../../shared/config/firebase';
 export class AuthService {
   private messageBroker = getMessageBroker();
   private redis: any;
+  private userModel: any;
 
   constructor() {
     this.initializeRedis();
+    this.initializeUserModel();
+  }
+
+  private async initializeUserModel() {
+    try {
+      const connection = await getDatabaseConnection('identity-db');
+      this.userModel = getUserModel(connection);
+    } catch (error) {
+      authLogger.logger.error('Failed to initialize User model', { error });
+      // Fallback to default model
+      this.userModel = UserModel;
+    }
   }
 
   // Helper function to handle errors properly
@@ -46,7 +60,7 @@ export class AuthService {
   public async signup(userData: SignupInput): Promise<UserDocument> {
     try {
       // Check if user already exists
-      const existingUser = await UserModel.findByEmail(userData.email);
+      const existingUser = await this.userModel.findByEmail(userData.email);
       if (existingUser) {
         throw new ConflictError('User with this email already exists');
       }
@@ -60,7 +74,7 @@ export class AuthService {
       const passwordHash = await jwtService.hashPassword(userData.password);
 
       // Create user with enhanced fields
-      const user = new UserModel({
+      const user = new this.userModel({
         email: userData.email,
         passwordHash,
         fullName: `${userData.firstName} ${userData.lastName}`,
@@ -109,7 +123,7 @@ export class AuthService {
   public async registerUser(userData: CreateUserInputType): Promise<UserDocument> {
     try {
       // Check if user already exists
-      const existingUser = await UserModel.findByEmail(userData.email);
+      const existingUser = await this.userModel.findByEmail(userData.email);
       if (existingUser) {
         throw new ConflictError('User with this email already exists');
       }
@@ -118,7 +132,7 @@ export class AuthService {
       const passwordHash = await jwtService.hashPassword(userData.password);
 
       // Create user
-      const user = new UserModel({
+      const user = new this.userModel({
         ...userData,
         passwordHash,
       });
@@ -158,7 +172,7 @@ export class AuthService {
   }> {
     try {
       // Find user by email
-      const user = await UserModel.findByEmail(loginData.email);
+      const user = await this.userModel.findByEmail(loginData.email);
       if (!user) {
         throw new AuthenticationError('Invalid email or password');
       }
@@ -217,7 +231,7 @@ export class AuthService {
       }
 
       // Find user
-      const user = await UserModel.findByEmail(email);
+      const user = await this.userModel.findByEmail(email);
       if (!user) {
         throw new NotFoundError('User not found');
       }
@@ -243,7 +257,7 @@ export class AuthService {
   public async resendEmailOTP(email: string): Promise<void> {
     try {
       // Find user
-      const user = await UserModel.findByEmail(email);
+      const user = await this.userModel.findByEmail(email);
       if (!user) {
         throw new NotFoundError('User not found');
       }
@@ -266,7 +280,7 @@ export class AuthService {
   public async forgotPassword(email: string): Promise<void> {
     try {
       // Find user
-      const user = await UserModel.findByEmail(email);
+      const user = await this.userModel.findByEmail(email);
       if (!user) {
         throw new NotFoundError('User not found');
       }
@@ -339,11 +353,11 @@ export class AuthService {
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       
       // Check if user already exists
-      let user = await UserModel.findByEmail(decodedToken.email!);
+      let user = await this.userModel.findByEmail(decodedToken.email!);
       
       if (!user) {
         // Create new user from Firebase data
-        user = new UserModel({
+        user = new this.userModel({
           email: decodedToken.email!,
           fullName: decodedToken.name || 'Firebase User',
           firstName: decodedToken.name?.split(' ')[0] || 'Firebase',

@@ -119,35 +119,45 @@ userSchema.pre('save', function(this: any, next) {
 
 // Static methods
 userSchema.statics.findByEmail = function(email: string) {
-  return this.findOne({ email: email.toLowerCase(), isActive: true });
+  return this.findOne({ email: email.toLowerCase(), isActive: true })
+    .maxTimeMS(30000); // 30 second timeout
 };
 
 userSchema.statics.findByPhone = function(phone: string) {
-  return this.findOne({ phone, isActive: true });
+  return this.findOne({ phone, isActive: true })
+    .maxTimeMS(30000); // 30 second timeout
 };
 
 userSchema.statics.findActiveUsers = function() {
-  return this.find({ isActive: true });
+  return this.find({ isActive: true })
+    .maxTimeMS(30000); // 30 second timeout
 };
 
 userSchema.statics.findByRole = function(role: string) {
-  return this.find({ role, isActive: true });
+  return this.find({ role, isActive: true })
+    .maxTimeMS(30000); // 30 second timeout
 };
 
 // Instance methods
 userSchema.methods.updateLastLogin = function() {
   this.lastLoginAt = new Date();
-  return this.save();
+  return this.save({ maxTimeMS: 30000 });
 };
 
 userSchema.methods.deactivate = function() {
   this.isActive = false;
-  return this.save();
+  return this.save({ maxTimeMS: 30000 });
 };
 
 userSchema.methods.activate = function() {
   this.isActive = true;
-  return this.save();
+  return this.save({ maxTimeMS: 30000 });
 };
 
+// Function to get User model with specific connection
+export const getUserModel = (connection: mongoose.Connection) => {
+  return connection.model<UserDocument, UserModel>('User', userSchema);
+};
+
+// Default export for backward compatibility (uses default connection)
 export const User = mongoose.model<UserDocument, UserModel>('User', userSchema);

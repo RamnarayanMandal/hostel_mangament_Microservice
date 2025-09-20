@@ -248,7 +248,7 @@ export default function UserPermissionManager({
                 <Checkbox 
                   id="custom-permissions"
                   checked={useCustomPermissions}
-                  onCheckedChange={setUseCustomPermissions}
+                  onCheckedChange={(checked) => setUseCustomPermissions(checked === true)}
                 />
                 <Label htmlFor="custom-permissions">
                   Use custom permissions instead of role defaults

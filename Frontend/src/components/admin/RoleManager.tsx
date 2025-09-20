@@ -34,25 +34,25 @@ import {
 } from 'lucide-react'
 import { UserRole, ROLE_PERMISSIONS } from '@/config/permissions'
 
-interface RoleManagerProps {
-  onRoleUpdate: (roleUpdates: Array<{ userId: string; newRole: UserRole }>) => void
+interface User {
+  _id: string
+  fullName: string
+  email: string
+  role: UserRole
 }
 
-// Mock data for demonstration
-const mockUsers = [
-  { _id: '1', fullName: 'John Doe', email: 'john@example.com', role: 'STUDENT' as UserRole },
-  { _id: '2', fullName: 'Jane Smith', email: 'jane@example.com', role: 'STAFF' as UserRole },
-  { _id: '3', fullName: 'Bob Johnson', email: 'bob@example.com', role: 'STUDENT' as UserRole },
-  { _id: '4', fullName: 'Alice Brown', email: 'alice@example.com', role: 'ADMIN' as UserRole },
-]
+interface RoleManagerProps {
+  onRoleUpdate: (roleUpdates: Array<{ userId: string; newRole: UserRole }>) => void
+  users: User[]
+}
 
-export default function RoleManager({ onRoleUpdate }: RoleManagerProps) {
+export default function RoleManager({ onRoleUpdate, users }: RoleManagerProps) {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [bulkRole, setBulkRole] = useState<UserRole>('STUDENT')
   const [showBulkUpdate, setShowBulkUpdate] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const filteredUsers = mockUsers.filter(user => 
+  const filteredUsers = users.filter(user => 
     user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.role.toLowerCase().includes(searchQuery.toLowerCase())
@@ -142,7 +142,7 @@ export default function RoleManager({ onRoleUpdate }: RoleManagerProps) {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="bulk-role">New Role</Label>
-                <Select value={bulkRole} onValueChange={setBulkRole}>
+                <Select value={bulkRole} onValueChange={(value) => setBulkRole(value as UserRole)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>

@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Search, Edit, Trash2, Eye, Filter, Download } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Filter, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStudents } from '@/hooks/useStudents';
 
@@ -35,9 +35,17 @@ const StudentsPage = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [courseFilter, setCourseFilter] = useState('');
-  const [yearFilter, setYearFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [courseFilter, setCourseFilter] = useState('all');
+  const [yearFilter, setYearFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    pages: 0
+  });
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -53,7 +61,8 @@ const StudentsPage = () => {
     address: '',
     emergencyContact: '',
     dateOfBirth: '',
-    gender: ''
+    gender: '',
+    isActive: true
   });
 
   const { 
@@ -66,18 +75,21 @@ const StudentsPage = () => {
 
   useEffect(() => {
     loadStudents();
-  }, [searchTerm, courseFilter, yearFilter, statusFilter]);
+  }, [searchTerm, courseFilter, yearFilter, statusFilter, currentPage, pageSize]);
 
   const loadStudents = async () => {
     try {
       setLoading(true);
       const response = await getAllStudents({
         search: searchTerm,
-        course: courseFilter,
-        year: yearFilter,
-        isActive: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
+        course: courseFilter === 'all' ? undefined : courseFilter,
+        year: yearFilter === 'all' ? undefined : yearFilter,
+        isActive: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
+        page: currentPage,
+        limit: pageSize
       });
       setStudents(response.students || []);
+      setPagination(response.pagination || { total: 0, page: 1, limit: 10, pages: 0 });
     } catch (error) {
       toast.error('Failed to load students');
     } finally {
@@ -145,7 +157,8 @@ const StudentsPage = () => {
       address: '',
       emergencyContact: '',
       dateOfBirth: '',
-      gender: ''
+      gender: '',
+      isActive: true
     });
     setSelectedStudent(null);
   };
@@ -163,7 +176,8 @@ const StudentsPage = () => {
       address: student.address || '',
       emergencyContact: student.emergencyContact || '',
       dateOfBirth: student.dateOfBirth || '',
-      gender: student.gender || ''
+      gender: student.gender || '',
+      isActive: student.isActive
     });
     setIsEditDialogOpen(true);
   };
@@ -355,7 +369,7 @@ const StudentsPage = () => {
                 <SelectValue placeholder="Filter by course" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Courses</SelectItem>
+                <SelectItem value="all">All Courses</SelectItem>
                 <SelectItem value="Computer Science">Computer Science</SelectItem>
                 <SelectItem value="Information Technology">Information Technology</SelectItem>
                 <SelectItem value="Electronics">Electronics</SelectItem>
@@ -367,7 +381,7 @@ const StudentsPage = () => {
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Years</SelectItem>
+                <SelectItem value="all">All Years</SelectItem>
                 <SelectItem value="1st">1st Year</SelectItem>
                 <SelectItem value="2nd">2nd Year</SelectItem>
                 <SelectItem value="3rd">3rd Year</SelectItem>
@@ -379,7 +393,7 @@ const StudentsPage = () => {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
@@ -469,6 +483,59 @@ const StudentsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Pagination Controls */}
+      {pagination.pages > 1 && (
+        <Card className="mt-6">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} students
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={pagination.page <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+                    const pageNum = Math.max(1, Math.min(pagination.pages - 4, pagination.page - 2)) + i;
+                    if (pageNum > pagination.pages) return null;
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={pageNum === pagination.page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="w-8 h-8 p-0"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(pagination.pages, prev + 1))}
+                  disabled={pagination.page >= pagination.pages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

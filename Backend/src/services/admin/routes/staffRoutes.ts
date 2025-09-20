@@ -19,6 +19,7 @@ router.get('/', validateRequest(paginationSchema), adminController.getAllStaff);
 router.post('/', validateRequest(z.object({
   fullName: z.string().min(1),
   email: z.string().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().optional(),
   employeeId: z.string().min(1),
   department: z.string().min(1),

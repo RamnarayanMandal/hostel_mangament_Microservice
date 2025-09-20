@@ -118,7 +118,7 @@ export default function StaffHostelsPage() {
         <StaggerContainer>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hostels && hostels.length > 0 ? hostels.map((hostel: Hostel) => {
-              const occupancyStatus = getOccupancyStatus(hostel.occupied, hostel.capacity)
+              const occupancyStatus = getOccupancyStatus(hostel.occupied || 0, hostel.capacity)
               const StatusIcon = occupancyStatus.icon
               
               return (
@@ -128,7 +128,7 @@ export default function StaffHostelsPage() {
                       <div className="relative h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg flex items-center justify-center">
                         <Building2 className="h-12 w-12 text-blue-600" />
                         <div className="absolute top-2 right-2 flex flex-col gap-1">
-                          {getStatusBadge(hostel.status)}
+                          {getStatusBadge(hostel.isActive ? 'ACTIVE' : 'INACTIVE')}
                           <Badge className={occupancyStatus.color}>
                             <StatusIcon className="h-3 w-3 mr-1" />
                             {occupancyStatus.label}

@@ -210,7 +210,7 @@ export class AdminController {
   // User Management
   public getAllUsers = async (req: Request, res: Response) => {
     try {
-      const { page = 1, limit = 10, search, role, isActive } = req.query;
+      const { page = 1, limit = 10, search, role, isActive } = req.validatedData;
       const users = await this.adminService.getAllUsers({
         page: Number(page),
         limit: Number(limit),

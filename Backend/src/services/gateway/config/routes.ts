@@ -610,6 +610,267 @@ export const defaultRoutes: Record<string, any> = {
   },
 
   // ==================== ADMIN SERVICE ROUTES ====================
+  // Admin Management Routes
+  'POST:/admin': {
+    method: 'POST',
+    path: '/admin',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/search': {
+    method: 'GET',
+    path: '/admin/search',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/search',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/:id': {
+    method: 'GET',
+    path: '/admin/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PUT:/admin/:id': {
+    method: 'PUT',
+    path: '/admin/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'DELETE:/admin/:id': {
+    method: 'DELETE',
+    path: '/admin/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin': {
+    method: 'GET',
+    path: '/admin',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+
+  // Report Management Routes
+  'POST:/admin/reports': {
+    method: 'POST',
+    path: '/admin/reports',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/reports',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/reports/:id': {
+    method: 'GET',
+    path: '/admin/reports/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/reports/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PUT:/admin/reports/:id': {
+    method: 'PUT',
+    path: '/admin/reports/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/reports/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'DELETE:/admin/reports/:id': {
+    method: 'DELETE',
+    path: '/admin/reports/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/reports/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/reports': {
+    method: 'GET',
+    path: '/admin/reports',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/reports',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+
+  // Audit Log Management Routes
+  'POST:/admin/audit-logs': {
+    method: 'POST',
+    path: '/admin/audit-logs',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/audit-logs',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/audit-logs/:id': {
+    method: 'GET',
+    path: '/admin/audit-logs/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/audit-logs/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/audit-logs': {
+    method: 'GET',
+    path: '/admin/audit-logs',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/audit-logs',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+
+  // User Management Routes
+  'GET:/admin/users': {
+    method: 'GET',
+    path: '/admin/users',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/users',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'POST:/admin/users': {
+    method: 'POST',
+    path: '/admin/users',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/users',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/users/:id': {
+    method: 'GET',
+    path: '/admin/users/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/users/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PATCH:/admin/users/:id/role': {
+    method: 'PATCH',
+    path: '/admin/users/:id/role',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/users/:id/role',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PATCH:/admin/users/:id/status': {
+    method: 'PATCH',
+    path: '/admin/users/:id/status',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/users/:id/status',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PATCH:/admin/users/bulk-roles': {
+    method: 'PATCH',
+    path: '/admin/users/bulk-roles',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/users/bulk-roles',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'DELETE:/admin/users/:id': {
+    method: 'DELETE',
+    path: '/admin/users/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/users/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+
+  // Dashboard Routes
   'GET:/admin/dashboard': {
     method: 'GET',
     path: '/admin/dashboard',
@@ -622,21 +883,9 @@ export const defaultRoutes: Record<string, any> = {
     transformation: { request: {}, response: {} },
     isActive: true
   },
-  'GET:/admin/statistics': {
+  'GET:/admin/dashboard/stats': {
     method: 'GET',
-    path: '/admin/statistics',
-    service: 'admin-service',
-    targetUrl: 'http://localhost:3009',
-    authentication: { required: true, roles: ['ADMIN'] },
-    rateLimit: { maxRequests: 50, windowMs: 900000 },
-    caching: { enabled: true, ttl: 600 },
-    timeout: 50000,
-    transformation: { request: {}, response: {} },
-    isActive: true
-  },
-  'GET:/admin/users': {
-    method: 'GET',
-    path: '/admin/users',
+    path: '/admin/dashboard/stats',
     service: 'admin-service',
     targetUrl: 'http://localhost:3009',
     authentication: { required: true, roles: ['ADMIN'] },
@@ -646,14 +895,186 @@ export const defaultRoutes: Record<string, any> = {
     transformation: { request: {}, response: {} },
     isActive: true
   },
-  'POST:/admin/users': {
-    method: 'POST',
-    path: '/admin/users',
+
+  // Staff Management Routes
+  'GET:/admin/staff': {
+    method: 'GET',
+    path: '/admin/staff',
     service: 'admin-service',
-    targetUrl: 'http://localhost:3009',
+    targetUrl: 'http://localhost:3009/api/admin/staff',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'POST:/admin/staff': {
+    method: 'POST',
+    path: '/admin/staff',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/staff',
     authentication: { required: true, roles: ['ADMIN'] },
     rateLimit: { maxRequests: 20, windowMs: 900000 },
     caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/staff/:id': {
+    method: 'GET',
+    path: '/admin/staff/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/staff/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PATCH:/admin/staff/:id': {
+    method: 'PATCH',
+    path: '/admin/staff/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/staff/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PATCH:/admin/staff/:id/status': {
+    method: 'PATCH',
+    path: '/admin/staff/:id/status',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/staff/:id/status',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PATCH:/admin/staff/:id/permissions': {
+    method: 'PATCH',
+    path: '/admin/staff/:id/permissions',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/staff/:id/permissions',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'DELETE:/admin/staff/:id': {
+    method: 'DELETE',
+    path: '/admin/staff/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/staff/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/staff/employee/:employeeId': {
+    method: 'GET',
+    path: '/admin/staff/employee/:employeeId',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/staff/employee/:employeeId',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+
+  // Student Management Routes
+  'GET:/admin/students': {
+    method: 'GET',
+    path: '/admin/students',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/students',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'POST:/admin/students': {
+    method: 'POST',
+    path: '/admin/students',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/students',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/students/:id': {
+    method: 'GET',
+    path: '/admin/students/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/students/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PATCH:/admin/students/:id': {
+    method: 'PATCH',
+    path: '/admin/students/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/students/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'PATCH:/admin/students/:id/status': {
+    method: 'PATCH',
+    path: '/admin/students/:id/status',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/students/:id/status',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'DELETE:/admin/students/:id': {
+    method: 'DELETE',
+    path: '/admin/students/:id',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/students/:id',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 20, windowMs: 900000 },
+    caching: { enabled: false, ttl: 300 },
+    timeout: 50000,
+    transformation: { request: {}, response: {} },
+    isActive: true
+  },
+  'GET:/admin/students/enrollment/:enrollmentNo': {
+    method: 'GET',
+    path: '/admin/students/enrollment/:enrollmentNo',
+    service: 'admin-service',
+    targetUrl: 'http://localhost:3009/api/admin/students/enrollment/:enrollmentNo',
+    authentication: { required: true, roles: ['ADMIN'] },
+    rateLimit: { maxRequests: 100, windowMs: 900000 },
+    caching: { enabled: true, ttl: 300 },
     timeout: 50000,
     transformation: { request: {}, response: {} },
     isActive: true

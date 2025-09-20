@@ -172,15 +172,12 @@ export class GatewayService {
       }
 
       const token = authHeader.substring(7);
-      // Here you would validate the JWT token
-      // For now, we'll return a mock user
-      const user: JWTPayload = {
-        id: 'user-id',
-        role: 'STUDENT',
-        email: 'user@example.com'
-      };
+      
+      // Import jwtService dynamically to avoid circular dependencies
+      const { jwtService } = await import('../../../shared/utils/jwt');
+      const decoded = jwtService.verifyAccessToken(token);
 
-      return { authenticated: true, user };
+      return { authenticated: true, user: decoded };
     } catch (error) {
       gatewayLogger.logger.error('Authentication error', { error: (error as Error).message });
       return { authenticated: false };
@@ -300,12 +297,19 @@ export class GatewayService {
    */
   private async forwardRequest(request: ProxyRequest, route: RouteDocument): Promise<AxiosResponse> {
     try {
-      // Transform the path for the target service
+      // For admin service, the targetUrl already includes the full path
+      // So we should use the targetUrl directly without appending the path
+      let url: string;
+      
+      if (route.service === 'admin-service') {
+        // Admin service targetUrl already includes the full path (e.g., /api/admin/users)
+        url = route.targetUrl;
+      } else {
+        // For other services, transform the path and append to base URL
       let targetPath = request.path;
       
       // Map gateway paths to service paths
       if (route.service === 'auth-service') {
-        // Convert /auth/register to /api/auth/register
         targetPath = `/api${request.path}`;
       } else if (route.service === 'student-service') {
         targetPath = `/api${request.path}`;
@@ -316,22 +320,21 @@ export class GatewayService {
       } else if (route.service === 'payment-service') {
         targetPath = `/api${request.path}`;
       } else if (route.service === 'test-service') {
-        // For test service, use the path as is
         targetPath = request.path;
+        }
+        
+        url = `${route.targetUrl}${targetPath}`;
       }
       
       // Log the path transformation for debugging
       gatewayLogger.logger.info('Path transformation', {
         originalPath: request.path,
-        targetPath,
+        targetUrl: url,
         service: route.service
       });
       
-      const url = `${route.targetUrl}${targetPath}`;
-      
       gatewayLogger.logger.info('Forwarding request', { 
         originalPath: request.path, 
-        targetPath, 
         targetUrl: url,
         service: route.service 
       });
